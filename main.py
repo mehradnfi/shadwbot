@@ -1,4 +1,47 @@
+Skip to content
+Navigation Menu
+mehradnfi
+shadwbot
+
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+Commit 1ca17be
+mehradnfi
+mehradnfi
+authored
+yesterday
+Verified
+Update main.py
+main
+1 parent
+2235625
+ commit
+1ca17be
+File tree
+Filter files…
+main.py
+1 file changed
++422
+-9
+lines changed
+Search within code
+ 
+‎main.py
++422
+-9
+Lines changed: 422 additions & 9 deletions
+Original file line number    Diff line number    Diff line change
+@@ -1,15 +1,428 @@
 import asyncio
+from aiogram import Bot, Dispatcher
+from bot.config import BOT_TOKEN
+from bot.handlers import start_handler
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import (
     Message, ReplyKeyboardMarkup, KeyboardButton,
@@ -11,24 +54,18 @@ import json
 import os
 import traceback
 from dotenv import load_dotenv
-
 # Load environment variables
 load_dotenv()
-
 # Get sensitive data from environment variables
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "YOUR_ADMIN_ID_HERE"))
 DB_FILE = "database.json"
 SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME", "SupportUserName")
-
-
 # Ensure DB file exists with proper structure
 def initialize_db():
     if not os.path.exists(DB_FILE):
         with open(DB_FILE, "w", encoding='utf-8') as f:
             json.dump({"users": {}, "purchases": []}, f, indent=2, ensure_ascii=False)
-
-
 def load_db():
     try:
         with open(DB_FILE, "r", encoding='utf-8') as f:
@@ -40,18 +77,12 @@ def load_db():
             return data
     except (FileNotFoundError, json.JSONDecodeError):
         return {"users": {}, "purchases": []}
-
-
 def save_db(data):
     with open(DB_FILE, "w", encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-
-
 initialize_db()
-
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
-
 user_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="👤 مشخصات کاربری من")],
@@ -61,7 +92,6 @@ user_menu = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
-
 start_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📞 ارسال شماره تماس")],
@@ -69,8 +99,6 @@ start_menu = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
-
-
 def ensure_user_exists(user_id):
     db = load_db()
     if user_id not in db["users"]:
@@ -97,8 +125,6 @@ def ensure_user_exists(user_id):
         if "inviter" not in user:
             user["inviter"] = None
     save_db(db)
-
-
 @dp.message(CommandStart())
 async def start(message: Message):
     if message.chat.type != ChatType.PRIVATE:
@@ -121,8 +147,6 @@ async def start(message: Message):
             reply_markup=user_menu,
             parse_mode="HTML"
         )
-
-
 @dp.message(F.text == "📞 ارسال شماره تماس")
 async def request_phone(message: Message):
     if message.chat.type != ChatType.PRIVATE:
@@ -153,8 +177,6 @@ async def request_phone(message: Message):
         reply_markup=kb,
         parse_mode="HTML"
     )
-
-
 @dp.message(F.content_type.in_([ContentType.CONTACT]))
 async def handle_contact(message: Message):
     if message.chat.type != ChatType.PRIVATE:
@@ -177,8 +199,6 @@ async def handle_contact(message: Message):
         reply_markup=user_menu,
         parse_mode="HTML"
     )
-
-
 # 👤 مشخصات کاربری من
 @dp.message(F.text == "👤 مشخصات کاربری من")
 async def user_profile(message: Message):
@@ -201,7 +221,6 @@ async def user_profile(message: Message):
     total_success = f"{len(purchased)}"
     total_services = f"{len(active) + len(purchased)}"
     active_services = f"{len(active)}"
-
     text = (
         "<b>📝 مشخصات کاربری</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -221,7 +240,11 @@ async def user_profile(message: Message):
     )
     await message.answer(text, parse_mode="HTML", reply_markup=user_menu)
 
+async def main():
+    bot = Bot(token=BOT_TOKEN)
+    dp = Dispatcher()
 
+    dp.include_router(start_handler.router)
 # 🛒 خرید بسته
 @dp.message(F.text == "🛒 خرید بسته")
 async def buy_package(message: Message):
@@ -235,8 +258,6 @@ async def buy_package(message: Message):
         "━━━━━━━━━━━━━━━━━━━━━━"
     )
     await message.answer(text, parse_mode="HTML", reply_markup=user_menu)
-
-
 # 🔗 لینک دعوت من
 @dp.message(F.text == "🔗 لینک دعوت من")
 async def invite_link(message: Message):
@@ -255,8 +276,6 @@ async def invite_link(message: Message):
         "━━━━━━━━━━━━━━━━━━━━━━"
     )
     await message.answer(text, parse_mode="HTML", reply_markup=user_menu)
-
-
 # 💬 پیام به پشتیبانی
 @dp.message(F.text == "💬 پیام به پشتیبانی")
 async def support_message(message: Message):
@@ -282,8 +301,6 @@ async def support_message(message: Message):
         reply_markup=user_menu,
         parse_mode="HTML"
     )
-
-
 # دکمه مخفی شروع (کاربر نمی‌فهمه)
 @dp.message(F.text == "شروع")
 async def hidden_start(message: Message):
@@ -296,8 +313,6 @@ async def hidden_start(message: Message):
         "━━━━━━━━━━━━━━━━━━━━━━"
     )
     await message.answer(text, parse_mode="HTML", reply_markup=user_menu)
-
-
 # 🔙 بازگشت
 @dp.message(F.text == "🔙 بازگشت")
 async def back_button(message: Message):
@@ -321,14 +336,11 @@ async def back_button(message: Message):
             reply_markup=start_menu,
             parse_mode="HTML"
         )
-
-
 # هندلر عمومی برای جلوگیری از ناپدید شدن منو
 @dp.message()
 async def handle_any_message(message: Message):
     if message.chat.type != ChatType.PRIVATE:
         return
-
     # اگر پیام جزو دکمه‌های منو نبود، منو رو دوباره نشون بده
     if message.text not in [
         "👤 مشخصات کاربری من", "🛒 خرید بسته", "🔗 لینک دعوت من",
@@ -353,12 +365,8 @@ async def handle_any_message(message: Message):
                 reply_markup=start_menu,
                 parse_mode="HTML"
             )
-
-
 # مدیریت (بدون تغییر)
 broadcast_flag = {}
-
-
 @dp.message(Command("admin"))
 async def admin_panel(message: Message):
     if message.chat.type != ChatType.PRIVATE:
@@ -370,8 +378,6 @@ async def admin_panel(message: Message):
         [InlineKeyboardButton(text="💌 ارسال پیام همگانی", callback_data="broadcast")]
     ])
     await message.answer("پنل مدیریت 👑", reply_markup=kb)
-
-
 @dp.callback_query(F.data == "users")
 async def list_users(call):
     if call.message.chat.type != ChatType.PRIVATE:
@@ -380,8 +386,6 @@ async def list_users(call):
         return
     db = load_db()
     await call.message.answer(f"👥 تعداد کاربران: {len(db['users'])}")
-
-
 @dp.callback_query(F.data == "broadcast")
 async def request_broadcast(call):
     if call.message.chat.type != ChatType.PRIVATE:
@@ -390,8 +394,6 @@ async def request_broadcast(call):
         return
     broadcast_flag[call.from_user.id] = True
     await call.message.answer("✏️ پیام خود را ارسال کنید:")
-
-
 @dp.message()
 async def do_broadcast(message: Message):
     if message.chat.type != ChatType.PRIVATE:
@@ -405,8 +407,6 @@ async def do_broadcast(message: Message):
                 pass
         await message.answer("✅ پیام به همه ارسال شد.")
         broadcast_flag[message.from_user.id] = False
-
-
 async def main():
     try:
         print("🚀 ربات ShadowNet VPN در حال راه‌اندازی...")
@@ -420,9 +420,20 @@ async def main():
     finally:
         print("🛑 ربات متوقف شد")
 
+    await dp.start_polling(bot)
 
+if __name__ == "__main__":
 if __name__ == '__main__':
     print("=" * 50)
     print("🎯 ShadowNet VPN Bot")
     print("=" * 50)
     asyncio.run(main())
+0 commit comments
+Comments
+0
+ (0)
+Comment
+You're not receiving notifications from this thread.
+
+Update main.py · mehradnfi/shadwbot@1ca17beThere are no files selected for viewing
+Rephrase
